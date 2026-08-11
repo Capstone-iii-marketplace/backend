@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const { Listing } = require("../models");
+const { validateListing } = require("../utils/validateListing");
 
 // Restricting attributes here keeps passwordHash from ever leaving the
 // database, so the models can be returned to the client directly.
@@ -42,4 +43,45 @@ async function getListingById(req, res, next) {
   }
 }
 
-module.exports = { getListings, getListingById };
+async function createListing(req, res, next) {
+  try {
+    const { error, values } = validateListing(req.body);
+    if (error) return res.status(400).json({ error });
+
+    // sellerId from the cookie, never the body.
+    const listing = await Listing.create({ ...values, sellerId: req.user.id });
+    res.status(201).json({ listing });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function updateListing(req, res, next) {
+  try {
+    const { error, values } = validateListing(req.body, { partial: true });
+    if (error) return res.status(400).json({ error });
+
+    await req.listing.update(values);
+    res.json({ listing: req.listing });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteListing(req, res, next) {
+  try {
+    // Soft delete — orders and conversations point at this row.
+    await req.listing.update({ status: "removed" });
+    res.json({ message: "Listing removed" });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  getListings,
+  getListingById,
+  createListing,
+  updateListing,
+  deleteListing,
+};
