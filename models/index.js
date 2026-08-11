@@ -1,16 +1,12 @@
 const db = require("./db");
 const User = require("./Users");
 const Listing = require("./Listings");
-const ListingImage = require("./ListingImages");
 const Conversation = require("./Conversations");
 const Message = require("./Messages");
 const Order = require("./Orders");
 
 User.hasMany(Listing, { foreignKey: "sellerId", as: "listings" });
 Listing.belongsTo(User, { foreignKey: "sellerId", as: "seller" });
-
-Listing.hasMany(ListingImage, { foreignKey: "listingId", as: "images" });
-ListingImage.belongsTo(Listing, { foreignKey: "listingId", as: "listing" });
 
 Listing.hasMany(Conversation, { foreignKey: "listingId", as: "conversations" });
 Conversation.belongsTo(Listing, { foreignKey: "listingId", as: "listing" });
@@ -40,7 +36,6 @@ module.exports = {
   db,
   User,
   Listing,
-  ListingImage,
   Conversation,
   Message,
   Order,

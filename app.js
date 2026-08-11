@@ -3,7 +3,9 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { db } = require("./models");
+// routes
 const authRoute = require("./routes/auth.route");
+const listingRoute = require("./routes/listing.route");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +34,7 @@ app.get("/health", async (req, res) => {
 });
 
 app.use("/api/auth", authRoute);
+app.use("/api/listings", listingRoute);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
