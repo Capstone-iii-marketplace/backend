@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-const express = required("express");
-const app = express.Router();
-=======
+
 const express = require("express")
 const cors = require("cors")
 const app = express();
@@ -29,4 +26,4 @@ const dbConnection = async () => {
   }
 }
 dbConnection();
->>>>>>> ae5ee045f344ea35677d49a4a56c7eebaee03891
+
