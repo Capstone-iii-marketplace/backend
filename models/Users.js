@@ -29,11 +29,6 @@ const User = db.define(
       allowNull: false,
     },
 
-    campus: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
     verifiedAt: {
       type: DataTypes.DATE,
       allowNull: true,
