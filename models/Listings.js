@@ -36,6 +36,13 @@ const Listing = db.define(
       defaultValue: "both",
       validate: { isIn: [["online", "in_person", "both"]] },
     },
+    // Cloudinary secure_urls. Postgres arrays mean no join and no second
+    // table — index 0 is the thumbnail.
+    images: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: [],
+    },
   },
   {
     tableName: "listings",

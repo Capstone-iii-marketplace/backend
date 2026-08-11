@@ -1,14 +1,6 @@
 require("dotenv").config();
 const bcrypt = require("bcrypt");
-const {
-  db,
-  User,
-  Listing,
-  ListingImage,
-  Conversation,
-  Message,
-  Order,
-} = require("./models");
+const { db, User, Listing, Conversation, Message, Order } = require("./models");
 
 async function seed() {
   // force: true drops and recreates every table — dev only.
@@ -47,6 +39,8 @@ async function seed() {
     { returning: true },
   );
 
+  // Placeholder images. Real ones become Cloudinary secure_urls once uploads
+  // exist — the column shape doesn't change.
   const listings = await Listing.bulkCreate(
     [
       {
@@ -54,30 +48,42 @@ async function seed() {
         title: "Calculus: Early Transcendentals, 8th ed.",
         priceCents: 4500,
         paymentMethods: "both",
+        images: [
+          "https://placehold.co/600x400?text=Calculus",
+          "https://placehold.co/600x400?text=Back+cover",
+          "https://placehold.co/600x400?text=Inside",
+        ],
       },
       {
         sellerId: alice.id,
         title: "Organic Chemistry as a Second Language",
         priceCents: 2200,
         paymentMethods: "in_person",
+        images: ["https://placehold.co/600x400?text=Orgo"],
       },
       {
         sellerId: alice.id,
         title: "TI-84 Plus graphing calculator",
         priceCents: 6000,
         paymentMethods: "both",
+        images: [
+          "https://placehold.co/600x400?text=TI-84",
+          "https://placehold.co/600x400?text=Screen",
+        ],
       },
       {
         sellerId: bob.id,
         title: "IKEA desk lamp, barely used",
         priceCents: 1200,
         paymentMethods: "in_person",
+        images: ["https://placehold.co/600x400?text=Lamp"],
       },
       {
         sellerId: bob.id,
         title: "Mini fridge, 3.2 cu ft",
         priceCents: 8500,
         paymentMethods: "in_person",
+        images: ["https://placehold.co/600x400?text=Fridge"],
       },
       {
         sellerId: bob.id,
@@ -85,18 +91,21 @@ async function seed() {
         priceCents: 5500,
         status: "pending",
         paymentMethods: "both",
+        images: ["https://placehold.co/600x400?text=Biology"],
       },
       {
         sellerId: carlos.id,
         title: "Winter coat, size M",
         priceCents: 3000,
         paymentMethods: "both",
+        images: ["https://placehold.co/600x400?text=Coat"],
       },
       {
         sellerId: carlos.id,
         title: "Mechanical keyboard, brown switches",
         priceCents: 4000,
         paymentMethods: "online",
+        images: ["https://placehold.co/600x400?text=Keyboard"],
       },
       {
         sellerId: carlos.id,
@@ -104,31 +113,21 @@ async function seed() {
         priceCents: 1800,
         status: "sold",
         paymentMethods: "both",
+        images: ["https://placehold.co/600x400?text=Psychology"],
       },
       {
         sellerId: dana.id,
         title: "Desk chair, ergonomic",
         priceCents: 5000,
         paymentMethods: "in_person",
+        images: ["https://placehold.co/600x400?text=Chair"],
       },
     ],
     { returning: true },
   );
 
-  const [calculus, orgo, calculator, lamp, fridge, biology] = listings;
+  const [calculus, , , , fridge, biology] = listings;
   const psych = listings[8];
-
-  // Placeholder images. Real ones land in S3/Cloudinary once uploads exist.
-  await ListingImage.bulkCreate([
-    { listingId: calculus.id, url: "https://placehold.co/600x400?text=Calculus", position: 0 },
-    { listingId: calculus.id, url: "https://placehold.co/600x400?text=Back+cover", position: 1 },
-    { listingId: calculus.id, url: "https://placehold.co/600x400?text=Inside", position: 2 },
-    { listingId: orgo.id, url: "https://placehold.co/600x400?text=Orgo", position: 0 },
-    { listingId: calculator.id, url: "https://placehold.co/600x400?text=TI-84", position: 0 },
-    { listingId: calculator.id, url: "https://placehold.co/600x400?text=Screen", position: 1 },
-    { listingId: lamp.id, url: "https://placehold.co/600x400?text=Lamp", position: 0 },
-    { listingId: fridge.id, url: "https://placehold.co/600x400?text=Fridge", position: 0 },
-  ]);
 
   const conversation = await Conversation.create({
     listingId: calculus.id,
@@ -194,16 +193,13 @@ async function seed() {
     },
   ]);
 
-  // Prove the associations actually work.
+  // Prove the associations still work after dropping listing_images.
   const check = await Conversation.findOne({
     where: { id: conversation.id },
     include: [
       { association: "messages" },
       { association: "buyer" },
-      {
-        association: "listing",
-        include: [{ association: "seller" }, { association: "images" }],
-      },
+      { association: "listing", include: [{ association: "seller" }] },
     ],
     order: [[{ model: Message, as: "messages" }, "createdAt", "ASC"]],
   });
@@ -225,7 +221,6 @@ async function seed() {
     users: await User.count(),
     listings: await Listing.count(),
     active: await Listing.count({ where: { status: "active" } }),
-    images: await ListingImage.count(),
     conversations: await Conversation.count(),
     messages: await Message.count(),
     orders: await Order.count(),
