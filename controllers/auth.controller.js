@@ -1,14 +1,8 @@
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const { User } = require("../models");
 const { sendWelcomeEmail } = require("../services/email.service");
-
-function signToken(user) {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-  });
-}
+const generateToken = require("../utils/generateToken");
 
 // Never return the model directly — that leaks passwordHash.
 function publicUser(user) {
@@ -57,7 +51,8 @@ async function signup(req, res, next) {
       console.error("Welcome email failed:", err.message),
     );
 
-    res.status(201).json({ token: signToken(user), user: publicUser(user) });
+    generateToken(user, res);
+    res.status(201).json({ user: publicUser(user) });
   } catch (err) {
     next(err);
   }
@@ -85,7 +80,8 @@ async function login(req, res, next) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    res.json({ token: signToken(user), user: publicUser(user) });
+    generateToken(user, res);
+    res.json({ user: publicUser(user) });
   } catch (err) {
     next(err);
   }
@@ -105,4 +101,16 @@ async function me(req, res, next) {
   }
 }
 
-module.exports = { signup, login, me };
+function logout(_, res) {
+  // The browser only overwrites a cookie when httpOnly/sameSite/secure match
+  // the ones it was set with, so these must mirror generateToken().
+  res.cookie("jwt", "", {
+    maxAge: 0,
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  });
+  res.status(200).json({ message: "Logged out successfully" });
+}
+
+module.exports = { signup, login, logout, me };
