@@ -27,6 +27,20 @@ async function getListings(req, res, next) {
   }
 }
 
+async function getMyListings(req, res, next) {
+  try {
+    const listings = await Listing.findAll({
+      where: { sellerId: req.user.id },
+      include: [SELLER],
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.json({ listings });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function getListingById(req, res, next) {
   try {
     const listing = await Listing.findByPk(req.params.id, {
@@ -80,6 +94,7 @@ async function deleteListing(req, res, next) {
 
 module.exports = {
   getListings,
+  getMyListings,
   getListingById,
   createListing,
   updateListing,
