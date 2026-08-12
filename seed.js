@@ -39,8 +39,8 @@ async function seed() {
     { returning: true },
   );
 
-  // Placeholder images. Real ones become Cloudinary secure_urls once uploads
-  // exist — the column shape doesn't change.
+  // Real photos from picsum.photos. The seed in the URL keeps each listing's
+  // image stable across reseeds, so the demo looks the same every run.
   const listings = await Listing.bulkCreate(
     [
       {
@@ -49,9 +49,9 @@ async function seed() {
         priceCents: 4500,
         paymentMethods: "both",
         images: [
-          "https://placehold.co/600x400?text=Calculus",
-          "https://placehold.co/600x400?text=Back+cover",
-          "https://placehold.co/600x400?text=Inside",
+          "https://picsum.photos/seed/calculus1/600/400",
+          "https://picsum.photos/seed/calculus2/600/400",
+          "https://picsum.photos/seed/calculus3/600/400",
         ],
       },
       {
@@ -59,7 +59,7 @@ async function seed() {
         title: "Organic Chemistry as a Second Language",
         priceCents: 2200,
         paymentMethods: "in_person",
-        images: ["https://placehold.co/600x400?text=Orgo"],
+        images: ["https://picsum.photos/seed/orgo1/600/400"],
       },
       {
         sellerId: alice.id,
@@ -67,8 +67,8 @@ async function seed() {
         priceCents: 6000,
         paymentMethods: "both",
         images: [
-          "https://placehold.co/600x400?text=TI-84",
-          "https://placehold.co/600x400?text=Screen",
+          "https://picsum.photos/seed/ti84a/600/400",
+          "https://picsum.photos/seed/ti84b/600/400",
         ],
       },
       {
@@ -76,14 +76,17 @@ async function seed() {
         title: "IKEA desk lamp, barely used",
         priceCents: 1200,
         paymentMethods: "in_person",
-        images: ["https://placehold.co/600x400?text=Lamp"],
+        images: ["https://picsum.photos/seed/desklamp/600/400"],
       },
       {
         sellerId: bob.id,
         title: "Mini fridge, 3.2 cu ft",
         priceCents: 8500,
         paymentMethods: "in_person",
-        images: ["https://placehold.co/600x400?text=Fridge"],
+        images: [
+          "https://picsum.photos/seed/fridge1/600/400",
+          "https://picsum.photos/seed/fridge2/600/400",
+        ],
       },
       {
         sellerId: bob.id,
@@ -91,21 +94,24 @@ async function seed() {
         priceCents: 5500,
         status: "pending",
         paymentMethods: "both",
-        images: ["https://placehold.co/600x400?text=Biology"],
+        images: ["https://picsum.photos/seed/biology1/600/400"],
       },
       {
         sellerId: carlos.id,
         title: "Winter coat, size M",
         priceCents: 3000,
         paymentMethods: "both",
-        images: ["https://placehold.co/600x400?text=Coat"],
+        images: [
+          "https://picsum.photos/seed/coat1/600/400",
+          "https://picsum.photos/seed/coat2/600/400",
+        ],
       },
       {
         sellerId: carlos.id,
         title: "Mechanical keyboard, brown switches",
         priceCents: 4000,
         paymentMethods: "online",
-        images: ["https://placehold.co/600x400?text=Keyboard"],
+        images: ["https://picsum.photos/seed/keyboard1/600/400"],
       },
       {
         sellerId: carlos.id,
@@ -113,14 +119,14 @@ async function seed() {
         priceCents: 1800,
         status: "sold",
         paymentMethods: "both",
-        images: ["https://placehold.co/600x400?text=Psychology"],
+        images: ["https://picsum.photos/seed/psych1/600/400"],
       },
       {
         sellerId: dana.id,
         title: "Desk chair, ergonomic",
         priceCents: 5000,
         paymentMethods: "in_person",
-        images: ["https://placehold.co/600x400?text=Chair"],
+        images: ["https://picsum.photos/seed/chair1/600/400"],
       },
     ],
     { returning: true },
@@ -193,7 +199,6 @@ async function seed() {
     },
   ]);
 
-  // Prove the associations still work after dropping listing_images.
   const check = await Conversation.findOne({
     where: { id: conversation.id },
     include: [

@@ -16,7 +16,6 @@ const router = express.Router();
 
 router.get("/", requireAuth, getListings);
 router.post("/", requireAuth, createListing);
-
 router.get("/:id", requireAuth, getListingById);
 router.patch(
   "/:id",
