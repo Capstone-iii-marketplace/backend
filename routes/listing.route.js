@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getListings,
+  getMyListings,
   getListingById,
   createListing,
   updateListing,
@@ -16,6 +17,9 @@ const router = express.Router();
 
 router.get("/", requireAuth, getListings);
 router.post("/", requireAuth, createListing);
+
+// Must come before "/:id" or "mine" gets swallowed as an id param.
+router.get("/mine", requireAuth, getMyListings);
 
 router.get("/:id", requireAuth, getListingById);
 router.patch(
