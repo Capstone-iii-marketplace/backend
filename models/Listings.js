@@ -25,8 +25,8 @@ const Listing = db.define(
     status: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: "active",
-      validate: { isIn: [["active", "pending", "sold", "removed"]] },
+      defaultValue: "available",
+      validate: { isIn: [["available", "pending", "sold", "removed"]] },
     },
     // What the seller accepts. A seller with no Stripe setup can only offer
     // in_person, so this is set per listing rather than per account.
@@ -39,7 +39,7 @@ const Listing = db.define(
     // Cloudinary secure_urls. Postgres arrays mean no join and no second
     // table — index 0 is the thumbnail.
     images: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.ARRAY(DataTypes.TEXT),
       allowNull: false,
       defaultValue: [],
     },

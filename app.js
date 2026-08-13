@@ -24,7 +24,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
-  res.json({ message: "Marketplace API is running" });
+  res.json({ message: "Sell Me A Pen API is running" });
 });
 
 app.get("/health", async (req, res) => {

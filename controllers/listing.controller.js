@@ -9,7 +9,7 @@ const SELLER = { association: "seller", attributes: ["id", "name"] };
 async function getListings(req, res, next) {
   try {
     const { q } = req.query;
-    const where = { status: "active" };
+    const where = { status: "available" };
 
     if (q?.trim()) {
       where.title = { [Op.iLike]: `%${q.trim()}%` };

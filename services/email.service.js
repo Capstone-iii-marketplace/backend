@@ -2,7 +2,7 @@ const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API);
 const FROM = process.env.EMAIL_FROM || "onboarding@resend.dev";
-const APP_NAME = "Campus Marketplace";
+const APP_NAME = "Sell Me A Pen";
 
 // Names come from user input and land inside HTML — escape or a name like
 // "<b>Phyo" silently breaks the layout.

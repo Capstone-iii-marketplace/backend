@@ -225,7 +225,7 @@ async function seed() {
   const counts = {
     users: await User.count(),
     listings: await Listing.count(),
-    active: await Listing.count({ where: { status: "active" } }),
+    available: await Listing.count({ where: { status: "available" } }),
     conversations: await Conversation.count(),
     messages: await Message.count(),
     orders: await Order.count(),
