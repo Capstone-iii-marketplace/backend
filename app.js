@@ -7,6 +7,7 @@ const { db } = require("./models");
 const authRoute = require("./routes/auth.route");
 const listingRoute = require("./routes/listing.route");
 const orderRoute = require("./routes/order.route");
+const webhookRoute = require("./routes/webhook.route");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,11 @@ app.use(
     credentials: true,
   }),
 );
+
+// Must come before express.json() below — Stripe signs the raw body, and
+// once express.json() has parsed it there's no getting the raw bytes back.
+app.use("/api/webhooks", webhookRoute);
+
 // Listing photos are sent as base64 data URLs, which run well past
 // express's 100kb default body limit.
 app.use(express.json({ limit: "10mb" }));
