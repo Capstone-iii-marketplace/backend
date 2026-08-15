@@ -12,6 +12,11 @@ const webhookRoute = require("./routes/webhook.route");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const http = require("http");
+const { initSockets } = require("./sockets");
+
+
+
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
@@ -69,7 +74,9 @@ const start = async () => {
   try {
     await db.sync();
     console.log("Database connected");
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    const server = http.createServer(app);
+    initSockets(server);
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (error) {
     console.error("Unable to connect:", error);
     process.exit(1);
