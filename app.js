@@ -15,6 +15,8 @@ const PORT = process.env.PORT || 3000;
 const http = require("http");
 const { initSockets } = require("./sockets");
 
+const conversationRoute = require("./routes/conversation.route");
+
 
 
 app.use(
@@ -49,6 +51,7 @@ app.get("/health", async (req, res) => {
 
 app.use("/api/auth", authRoute);
 app.use("/api/listings", listingRoute);
+app.use("/api/conversations", conversationRoute);
 app.use("/api/orders", orderRoute);
 
 app.use((req, res) => {
