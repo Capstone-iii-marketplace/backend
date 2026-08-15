@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { db } = require("./models");
+
 // routes
 const authRoute = require("./routes/auth.route");
 const listingRoute = require("./routes/listing.route");

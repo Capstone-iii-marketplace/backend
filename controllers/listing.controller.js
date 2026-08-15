@@ -6,11 +6,14 @@ const { validateListing } = require("../utils/validateListing");
 // database, so the models can be returned to the client directly.
 const SELLER = { association: "seller", attributes: ["id", "name"] };
 
+// get listing from the database, filter them by search query, include seller information
+// and return newest listing first
 async function getListings(req, res, next) {
   try {
-    const { q } = req.query;
-    const where = { status: "available" };
+    const { q } = req.query; // /api/listings?q=iphone -> {q : 'iphone'}
+    const where = { status: "available" }; // for sequelize, where filter
 
+    // check if q exist first and then tirm // optional chaining
     if (q?.trim()) {
       where.title = { [Op.iLike]: `%${q.trim()}%` };
     }
@@ -21,7 +24,7 @@ async function getListings(req, res, next) {
       order: [["createdAt", "DESC"]],
     });
 
-    res.json({ listings });
+    res.status(200).json({ listings });
   } catch (err) {
     next(err);
   }

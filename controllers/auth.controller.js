@@ -87,7 +87,17 @@ async function login(req, res, next) {
   }
 }
 
-// todo logout
+function logout(_, res) {
+  // The browser only overwrites a cookie when httpOnly/sameSite/secure match
+  // the ones it was set with, so these must mirror generateToken().
+  res.cookie("jwt", "", {
+    maxAge: 0,
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  });
+  res.status(200).json({ message: "Logged out successfully" });
+}
 
 async function me(req, res, next) {
   try {
@@ -99,18 +109,6 @@ async function me(req, res, next) {
   } catch (err) {
     next(err);
   }
-}
-
-function logout(_, res) {
-  // The browser only overwrites a cookie when httpOnly/sameSite/secure match
-  // the ones it was set with, so these must mirror generateToken().
-  res.cookie("jwt", "", {
-    maxAge: 0,
-    httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
-  });
-  res.status(200).json({ message: "Logged out successfully" });
 }
 
 module.exports = { signup, login, logout, me };

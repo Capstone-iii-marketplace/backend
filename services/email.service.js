@@ -104,7 +104,7 @@ function welcomeTemplate(user) {
 function welcomeText(user) {
   const url = process.env.CLIENT_URL || "http://localhost:5173";
   return [
-    `Welcome, ${user.name}`,
+    `Hi , ${user.name}`,
     ``,
     `Your account is ready. You can now list items and message other students.`,
     ``,
