@@ -4,6 +4,7 @@ const Listing = require("./Listings");
 const Conversation = require("./Conversations");
 const Message = require("./Messages");
 const Order = require("./Orders");
+const Call = require("./Calls");
 
 User.hasMany(Listing, { foreignKey: "sellerId", as: "listings" });
 Listing.belongsTo(User, { foreignKey: "sellerId", as: "seller" });
@@ -32,6 +33,15 @@ Order.belongsTo(Listing, { foreignKey: "listingId", as: "listing" });
 User.hasMany(Order, { foreignKey: "buyerId", as: "orders" });
 Order.belongsTo(User, { foreignKey: "buyerId", as: "buyer" });
 
+Conversation.hasMany(Call, { foreignKey: "conversationId", as: "calls" });
+Call.belongsTo(Conversation, { foreignKey: "conversationId", as: "conversation" });
+
+User.hasMany(Call, { foreignKey: "callerId", as: "outgoingCalls" });
+Call.belongsTo(User, { foreignKey: "callerId", as: "caller" });
+
+User.hasMany(Call, { foreignKey: "calleeId", as: "incomingCalls" });
+Call.belongsTo(User, { foreignKey: "calleeId", as: "callee" });
+
 module.exports = {
   db,
   User,
@@ -39,4 +49,5 @@ module.exports = {
   Conversation,
   Message,
   Order,
+  Call,
 };

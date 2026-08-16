@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const { Message, User } = require("../models");
 const { loadIfParticipant } = require("../controllers/conversation.controller");
+const { registerCallHandlers } = require("./call");
 
 // The handshake gives us the raw Cookie header, not parsed cookies —
 // cookie-parser is Express middleware and doesn't run here.
@@ -40,6 +41,11 @@ function initSockets(server) {
 
   io.on("connection", (socket) => {
     console.log(`socket connected: ${socket.user.email}`);
+
+      // Personal room so a user can be reached by id from anywhere — used to
+    // ring them and to address signaling payloads.
+    socket.join(`user:${socket.user.id}`);
+    registerCallHandlers(io, socket);
 
     // Rooms are per-conversation. Membership is checked here, server-side —
     // a client asking to join a thread it isn't part of gets nothing.
