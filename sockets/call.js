@@ -1,4 +1,5 @@
 const { Call, Conversation, User } = require("../models");
+const { Op } = require("sequelize");
 const { loadIfParticipant } = require("../controllers/conversation.controller");
 
 // The other participant in a conversation: buyer and seller are the only two,
@@ -110,6 +111,34 @@ function registerCallHandlers(io, socket) {
       io.to(`user:${to}`).emit(event, { from: userId, callId, data });
     });
   }
+
+  socket.on("disconnect", async () => {
+    // A user can be connected from several places at once. Only clean up
+    // when their last session goes — otherwise closing one tab would kill
+    // a call still running in another.
+    const remaining = io.sockets.adapter.rooms.get(`user:${userId}`)?.size ?? 0;
+    if (remaining > 0) return;
+
+    const open = await Call.findAll({
+      where: {
+        status: { [Op.in]: ["ringing", "active"] },
+        [Op.or]: [{ callerId: userId }, { calleeId: userId }],
+      },
+    });
+
+    for (const call of open) {
+      await call.update({
+        status: call.status === "ringing" ? "missed" : "ended",
+        endedAt: new Date(),
+      });
+
+      const otherId = call.callerId === userId ? call.calleeId : call.callerId;
+      io.to(`user:${otherId}`).emit("call:ended", {
+        callId: call.id,
+        reason: "peer-disconnected",
+      });
+    }
+  });
 }
 
 module.exports = { registerCallHandlers };
