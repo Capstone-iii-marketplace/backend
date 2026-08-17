@@ -96,13 +96,40 @@ function initSockets(server) {
           attributes: ["id", "name"],
         });
 
-        const payload = {
+       const payload = {
           id: saved.id,
           conversationId,
           body: saved.body,
           createdAt: saved.createdAt,
-          sender: { id: socket.user.id, name: socket.user.name },
+          sender: { id: sender.id, name: sender.name },
         };
+
+    io.to(`conversation:${conversationId}`).emit("message:new", payload);
+
+        const recipientId =
+          conversation.buyerId === socket.user.id
+            ? conversation.listing.sellerId
+            : conversation.buyerId;
+
+        // Anyone in the conversation room already got message:new above.
+        // Only ping the recipient's personal room if they aren't viewing
+        // the thread — otherwise they'd receive the same message twice.
+        const room = io.sockets.adapter.rooms.get(
+          `conversation:${conversationId}`,
+        );
+        const recipientSockets = await io
+          .in(`user:${recipientId}`)
+          .fetchSockets();
+        const isViewing = recipientSockets.some((s) => room?.has(s.id));
+
+        if (!isViewing) {
+          io.to(`user:${recipientId}`).emit("notification:message", {
+            ...payload,
+            listingTitle: conversation.listing.title,
+          });
+        }
+
+        ack?.({ ok: true, message: payload });
 
         io.to(`conversation:${conversationId}`).emit("message:new", payload);
         ack?.({ ok: true, message: payload });
