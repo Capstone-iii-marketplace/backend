@@ -4,7 +4,10 @@ const { validateListing } = require("../utils/validateListing");
 
 // Restricting attributes here keeps passwordHash from ever leaving the
 // database, so the models can be returned to the client directly.
-const SELLER = { association: "seller", attributes: ["id", "name"] };
+const SELLER = {
+  association: "seller",
+  attributes: ["id", "name", "verifiedAt"],
+};
 
 async function getListings(req, res, next) {
   try {

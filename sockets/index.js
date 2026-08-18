@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
 const { Server } = require("socket.io");
 const { Message, User } = require("../models");
 const { loadIfParticipant } = require("../controllers/conversation.controller");
@@ -59,6 +60,19 @@ function initSockets(server) {
       }
 
       socket.join(`conversation:${conversationId}`);
+
+      // Opening a thread means its unread messages have been seen.
+      await Message.update(
+        { readAt: new Date() },
+        {
+          where: {
+            conversationId,
+            senderId: { [Op.ne]: socket.user.id },
+            readAt: null,
+          },
+        },
+      );
+
       ack?.({ ok: true });
     });
 
@@ -104,7 +118,7 @@ function initSockets(server) {
           sender: { id: sender.id, name: sender.name },
         };
 
-    io.to(`conversation:${conversationId}`).emit("message:new", payload);
+        io.to(`conversation:${conversationId}`).emit("message:new", payload);
 
         const recipientId =
           conversation.buyerId === socket.user.id
@@ -129,9 +143,6 @@ function initSockets(server) {
           });
         }
 
-        ack?.({ ok: true, message: payload });
-
-        io.to(`conversation:${conversationId}`).emit("message:new", payload);
         ack?.({ ok: true, message: payload });
       } catch (err) {
         console.error("message:send failed", err);
