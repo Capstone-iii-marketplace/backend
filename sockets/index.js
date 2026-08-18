@@ -42,7 +42,7 @@ function initSockets(server) {
   io.on("connection", (socket) => {
     console.log(`socket connected: ${socket.user.email}`);
 
-      // Personal room so a user can be reached by id from anywhere — used to
+    // Personal room so a user can be reached by id from anywhere — used to
     // ring them and to address signaling payloads.
     socket.join(`user:${socket.user.id}`);
     registerCallHandlers(io, socket);
@@ -90,13 +90,13 @@ function initSockets(server) {
         await conversation.changed("updatedAt", true);
         await conversation.save();
 
-          // The JWT payload only carries id and email, so the display name
+        // The JWT payload only carries id and email, so the display name
         // has to come from the database.
         const sender = await User.findByPk(socket.user.id, {
           attributes: ["id", "name"],
         });
 
-       const payload = {
+        const payload = {
           id: saved.id,
           conversationId,
           body: saved.body,
@@ -104,7 +104,7 @@ function initSockets(server) {
           sender: { id: sender.id, name: sender.name },
         };
 
-    io.to(`conversation:${conversationId}`).emit("message:new", payload);
+        io.to(`conversation:${conversationId}`).emit("message:new", payload);
 
         const recipientId =
           conversation.buyerId === socket.user.id
@@ -129,9 +129,6 @@ function initSockets(server) {
           });
         }
 
-        ack?.({ ok: true, message: payload });
-
-        io.to(`conversation:${conversationId}`).emit("message:new", payload);
         ack?.({ ok: true, message: payload });
       } catch (err) {
         console.error("message:send failed", err);

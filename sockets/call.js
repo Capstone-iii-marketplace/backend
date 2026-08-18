@@ -31,7 +31,9 @@ function registerCallHandlers(io, socket) {
         status: "ringing",
       });
 
-      const caller = await User.findByPk(userId, { attributes: ["id", "name"] });
+      const caller = await User.findByPk(userId, {
+        attributes: ["id", "name"],
+      });
 
       // Personal room, not the conversation room — the callee should ring
       // even if they don't have the thread open.

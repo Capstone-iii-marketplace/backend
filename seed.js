@@ -1,6 +1,14 @@
 require("dotenv").config();
 const bcrypt = require("bcrypt");
-const { db, User, Listing, Conversation, Message, Order } = require("./models");
+const {
+  db,
+  User,
+  Listing,
+  Conversation,
+  Message,
+  Order,
+  Review,
+} = require("./models");
 
 async function seed() {
   // force: true drops and recreates every table — dev only.
@@ -222,6 +230,28 @@ async function seed() {
     console.log(`  ${who}: ${m.body}`);
   });
 
+  // reviews
+  await Review.bulkCreate([
+    {
+      sellerId: alice.id,
+      authorId: bob.id,
+      rating: 5,
+      body: "Book was exactly as described. Easy meetup by the library.",
+    },
+    {
+      sellerId: alice.id,
+      authorId: carlos.id,
+      rating: 4,
+      body: "Good price, slight delay meeting up but no problem.",
+    },
+    {
+      sellerId: bob.id,
+      authorId: carlos.id,
+      rating: 5,
+      body: "Don't trust the seller. Not even a student.",
+    },
+  ]);
+
   const counts = {
     users: await User.count(),
     listings: await Listing.count(),
@@ -229,6 +259,7 @@ async function seed() {
     conversations: await Conversation.count(),
     messages: await Message.count(),
     orders: await Order.count(),
+    reviews: await Review.count(),
   };
   console.log("\nSeeded:", counts);
 

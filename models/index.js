@@ -5,6 +5,7 @@ const Conversation = require("./Conversations");
 const Message = require("./Messages");
 const Order = require("./Orders");
 const Call = require("./Calls");
+const Review = require("./Reviews");
 
 User.hasMany(Listing, { foreignKey: "sellerId", as: "listings" });
 Listing.belongsTo(User, { foreignKey: "sellerId", as: "seller" });
@@ -34,13 +35,22 @@ User.hasMany(Order, { foreignKey: "buyerId", as: "orders" });
 Order.belongsTo(User, { foreignKey: "buyerId", as: "buyer" });
 
 Conversation.hasMany(Call, { foreignKey: "conversationId", as: "calls" });
-Call.belongsTo(Conversation, { foreignKey: "conversationId", as: "conversation" });
+Call.belongsTo(Conversation, {
+  foreignKey: "conversationId",
+  as: "conversation",
+});
 
 User.hasMany(Call, { foreignKey: "callerId", as: "outgoingCalls" });
 Call.belongsTo(User, { foreignKey: "callerId", as: "caller" });
 
 User.hasMany(Call, { foreignKey: "calleeId", as: "incomingCalls" });
 Call.belongsTo(User, { foreignKey: "calleeId", as: "callee" });
+
+User.hasMany(Review, { foreignKey: "sellerId", as: "reviewsReceived" });
+Review.belongsTo(User, { foreignKey: "sellerId", as: "seller" });
+
+User.hasMany(Review, { foreignKey: "authorId", as: "reviewsWritten" });
+Review.belongsTo(User, { foreignKey: "authorId", as: "author" });
 
 module.exports = {
   db,
@@ -50,4 +60,5 @@ module.exports = {
   Message,
   Order,
   Call,
+  Review,
 };
