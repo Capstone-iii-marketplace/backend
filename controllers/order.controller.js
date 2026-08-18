@@ -38,6 +38,12 @@ async function getMyOrders(req, res, next) {
 // though, so two buyers can't check out with the same item at once.
 async function createCheckoutSession(req, res, next) {
   try {
+    if (!stripe) {
+      return res
+        .status(503)
+        .json({ error: "Payments aren't configured on this server" });
+    }
+
     const { listingIds } = req.body;
 
     if (!Array.isArray(listingIds) || listingIds.length === 0) {
@@ -91,6 +97,10 @@ async function createCheckoutSession(req, res, next) {
 // verification (in the raw-body middleware upstream) is what proves the
 // request actually came from Stripe.
 async function handleStripeWebhook(req, res) {
+  if (!stripe) {
+    return res.status(503).send("Payments aren't configured on this server");
+  }
+
   const sig = req.headers["stripe-signature"];
   let event;
 
