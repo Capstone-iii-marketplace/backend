@@ -4,7 +4,8 @@ const KINDS = ["item", "session", "post"];
 // Returns { error } or { values }. `partial` skips required-field checks so
 // PATCH can send only what changes.
 function validateListing(body = {}, { partial = false } = {}) {
-  const { title, priceCents, paymentMethods, images, kind } = body;
+  const { title, description, priceCents, paymentMethods, images, kind } =
+    body;
   const values = {};
 
   if (title !== undefined) {
@@ -12,6 +13,10 @@ function validateListing(body = {}, { partial = false } = {}) {
     values.title = String(title).trim();
   } else if (!partial) {
     return { error: "Title is required" };
+  }
+
+  if (description !== undefined) {
+    values.description = String(description).trim();
   }
 
   if (priceCents !== undefined) {

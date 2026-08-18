@@ -17,6 +17,11 @@ const Listing = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: "",
+    },
     priceCents: {
       type: DataTypes.INTEGER,
       allowNull: false,
