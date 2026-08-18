@@ -10,6 +10,7 @@ const listingRoute = require("./routes/listing.route");
 const orderRoute = require("./routes/order.route");
 const webhookRoute = require("./routes/webhook.route");
 const reviewRoute = require("./routes/review.route");
+const usersRoute = require("./routes/users.route");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,6 +55,7 @@ app.use("/api/listings", listingRoute);
 app.use("/api/conversations", conversationRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api/reviews", reviewRoute);
+app.use("/api/users", usersRoute);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
@@ -87,4 +89,4 @@ const start = async () => {
   }
 };
 
-start()
+start();
