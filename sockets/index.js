@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const { Message, User } = require("../models");
 const { loadIfParticipant } = require("../controllers/conversation.controller");
+const { registerCallHandlers } = require("./call");
 
 // The handshake gives us the raw Cookie header, not parsed cookies —
 // cookie-parser is Express middleware and doesn't run here.
@@ -40,6 +41,11 @@ function initSockets(server) {
 
   io.on("connection", (socket) => {
     console.log(`socket connected: ${socket.user.email}`);
+
+      // Personal room so a user can be reached by id from anywhere — used to
+    // ring them and to address signaling payloads.
+    socket.join(`user:${socket.user.id}`);
+    registerCallHandlers(io, socket);
 
     // Rooms are per-conversation. Membership is checked here, server-side —
     // a client asking to join a thread it isn't part of gets nothing.
@@ -90,13 +96,40 @@ function initSockets(server) {
           attributes: ["id", "name"],
         });
 
-        const payload = {
+       const payload = {
           id: saved.id,
           conversationId,
           body: saved.body,
           createdAt: saved.createdAt,
-          sender: { id: socket.user.id, name: socket.user.name },
+          sender: { id: sender.id, name: sender.name },
         };
+
+    io.to(`conversation:${conversationId}`).emit("message:new", payload);
+
+        const recipientId =
+          conversation.buyerId === socket.user.id
+            ? conversation.listing.sellerId
+            : conversation.buyerId;
+
+        // Anyone in the conversation room already got message:new above.
+        // Only ping the recipient's personal room if they aren't viewing
+        // the thread — otherwise they'd receive the same message twice.
+        const room = io.sockets.adapter.rooms.get(
+          `conversation:${conversationId}`,
+        );
+        const recipientSockets = await io
+          .in(`user:${recipientId}`)
+          .fetchSockets();
+        const isViewing = recipientSockets.some((s) => room?.has(s.id));
+
+        if (!isViewing) {
+          io.to(`user:${recipientId}`).emit("notification:message", {
+            ...payload,
+            listingTitle: conversation.listing.title,
+          });
+        }
+
+        ack?.({ ok: true, message: payload });
 
         io.to(`conversation:${conversationId}`).emit("message:new", payload);
         ack?.({ ok: true, message: payload });
