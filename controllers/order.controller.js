@@ -1,4 +1,5 @@
-const { Order, Listing } = require("../models");
+const { Op } = require("sequelize");
+const { Order, Listing, Conversation } = require("../models");
 const stripe = require("../config/stripe");
 
 const LISTING_WITH_SELLER = {
@@ -6,10 +7,26 @@ const LISTING_WITH_SELLER = {
   include: [{ association: "seller", attributes: ["id", "name"] }],
 };
 
+// Orders this user bought — plus, opt-in via ?includeSelling=true, orders on
+// listings this user sold. Opt-in rather than the default so existing
+// callers (Home's "Recent orders", My Listings' "Bought" tab) keep their
+// current buyer-only behavior; only the account page's "sessions to
+// deliver" bucket needs the seller side, same Op.or pattern
+// conversation.controller.js already uses for that split.
 async function getMyOrders(req, res, next) {
   try {
+    const includeSelling = req.query.includeSelling === "true";
+    const where = includeSelling
+      ? {
+          [Op.or]: [
+            { buyerId: req.user.id },
+            { "$listing.seller_id$": req.user.id },
+          ],
+        }
+      : { buyerId: req.user.id };
+
     const orders = await Order.findAll({
-      where: { buyerId: req.user.id },
+      where,
       include: [LISTING_WITH_SELLER],
       order: [["createdAt", "DESC"]],
     });
@@ -117,6 +134,16 @@ async function handleStripeWebhook(req, res) {
           status: "paid",
         },
       });
+
+      // Paying for someone's time should open a channel to them — a buyer
+      // can book a session straight from the listing page without ever
+      // messaging first, which otherwise leaves the seller with no thread
+      // to deliver it in.
+      if (listing.kind === "session") {
+        await Conversation.findOrCreate({
+          where: { listingId: listing.id, buyerId },
+        });
+      }
     }
 
     await Listing.update({ status: "sold" }, { where: { id: ids } });

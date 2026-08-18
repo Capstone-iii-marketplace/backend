@@ -10,6 +10,8 @@ function publicUser(user) {
     id: user.id,
     email: user.email,
     name: user.name,
+    verifiedAt: user.verifiedAt,
+    createdAt: user.createdAt,
   };
 }
 

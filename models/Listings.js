@@ -17,10 +17,24 @@ const Listing = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    // The create/edit form has always collected this, but there was no
+    // column to save it to — it was silently dropped on every listing.
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     priceCents: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { min: 0 },
+    },
+    // item: current behavior. session: paid, delivered over video call —
+    // same checkout flow as item. post: free (priceCents 0), no cart/checkout.
+    kind: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "item",
+      validate: { isIn: [["item", "session", "post"]] },
     },
     status: {
       type: DataTypes.STRING,

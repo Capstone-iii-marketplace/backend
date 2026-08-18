@@ -1,12 +1,25 @@
 const { Op } = require("sequelize");
-const { Conversation, Message, Listing, User } = require("../models");
+const { Conversation, Message, Listing, User, db } = require("../models");
 
 const LISTING = {
   association: "listing",
-  attributes: ["id", "title", "priceCents", "images", "sellerId", "status"],
-  include: [{ association: "seller", attributes: ["id", "name"] }],
+  attributes: [
+    "id",
+    "title",
+    "kind",
+    "priceCents",
+    "images",
+    "sellerId",
+    "status",
+  ],
+  include: [
+    { association: "seller", attributes: ["id", "name", "verifiedAt"] },
+  ],
 };
-const BUYER = { association: "buyer", attributes: ["id", "name"] };
+const BUYER = {
+  association: "buyer",
+  attributes: ["id", "name", "verifiedAt"],
+};
 
 // Conversations don't store a sellerId — the seller is whoever owns the
 // listing. Every access check has to load the listing to know that.
@@ -35,7 +48,28 @@ async function getMyConversations(req, res, next) {
       order: [["updatedAt", "DESC"]],
     });
 
-    res.json({ conversations });
+    // One extra grouped query rather than N+1 — how many unread messages
+    // (sent by the other participant) sit in each thread.
+    const unreadRows = await Message.findAll({
+      attributes: ["conversationId", [db.fn("COUNT", db.col("id")), "count"]],
+      where: {
+        conversationId: conversations.map((c) => c.id),
+        senderId: { [Op.ne]: req.user.id },
+        readAt: null,
+      },
+      group: ["conversationId"],
+      raw: true,
+    });
+    const unreadByConversation = Object.fromEntries(
+      unreadRows.map((r) => [r.conversationId, Number(r.count)]),
+    );
+
+    const withUnread = conversations.map((c) => ({
+      ...c.toJSON(),
+      unreadCount: unreadByConversation[c.id] ?? 0,
+    }));
+
+    res.json({ conversations: withUnread });
   } catch (err) {
     next(err);
   }
