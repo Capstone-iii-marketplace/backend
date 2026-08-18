@@ -1,6 +1,17 @@
 const { Order, Listing } = require("../models");
 const stripe = require("../config/stripe");
 
+// Stripe's product image field only accepts a hosted http(s) URL under 2048
+// chars — listings can carry a base64 data: URL instead (uploaded photo
+// with no CDN behind it yet), which Stripe rejects outright.
+function stripeSafeImage(listing) {
+  const image = listing.images?.[0];
+  if (image && /^https?:\/\//.test(image) && image.length <= 2048) {
+    return [image];
+  }
+  return [];
+}
+
 const LISTING_WITH_SELLER = {
   association: "listing",
   include: [{ association: "seller", attributes: ["id", "name"] }],
@@ -53,7 +64,7 @@ async function createCheckoutSession(req, res, next) {
           unit_amount: listing.priceCents,
           product_data: {
             name: listing.title,
-            images: listing.images?.[0] ? [listing.images[0]] : [],
+            images: stripeSafeImage(listing),
           },
         },
       })),
