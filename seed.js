@@ -123,6 +123,22 @@ async function seed() {
       },
       {
         sellerId: carlos.id,
+        kind: "session",
+        title: "1-on-1 calculus tutoring",
+        priceCents: 2500,
+        paymentMethods: "online",
+        images: ["https://picsum.photos/seed/tutoring1/600/400"],
+      },
+      {
+        sellerId: dana.id,
+        kind: "post",
+        title: "How I studied for orgo without losing my mind",
+        priceCents: 0,
+        paymentMethods: "online",
+        images: ["https://picsum.photos/seed/studyguide1/600/400"],
+      },
+      {
+        sellerId: carlos.id,
         title: "Intro to Psychology, 5th ed.",
         priceCents: 1800,
         status: "sold",
@@ -141,7 +157,7 @@ async function seed() {
   );
 
   const [calculus, , , , fridge, biology] = listings;
-  const psych = listings[8];
+  const psych = listings[10];
 
   const conversation = await Conversation.create({
     listingId: calculus.id,
@@ -256,6 +272,9 @@ async function seed() {
     users: await User.count(),
     listings: await Listing.count(),
     available: await Listing.count({ where: { status: "available" } }),
+    items: await Listing.count({ where: { kind: "item" } }),
+    sessions: await Listing.count({ where: { kind: "session" } }),
+    posts: await Listing.count({ where: { kind: "post" } }),
     conversations: await Conversation.count(),
     messages: await Message.count(),
     orders: await Order.count(),

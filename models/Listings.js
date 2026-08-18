@@ -28,6 +28,14 @@ const Listing = db.define(
       defaultValue: "available",
       validate: { isIn: [["available", "pending", "sold", "removed"]] },
     },
+    // Drives both the category tabs on the dashboard and which purchase
+    // button the detail page shows (add-to-cart vs. book-a-session).
+    kind: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "item",
+      validate: { isIn: [["item", "session", "post"]] },
+    },
     // What the seller accepts. A seller with no Stripe setup can only offer
     // in_person, so this is set per listing rather than per account.
     paymentMethods: {
