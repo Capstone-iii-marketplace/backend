@@ -3,6 +3,7 @@ const validator = require("validator");
 const { User } = require("../models");
 const { sendWelcomeEmail } = require("../services/email.service");
 const generateToken = require("../utils/generateToken");
+const { cookieOptions } = generateToken;
 
 // Never return the model directly — that leaks passwordHash.
 function publicUser(user) {
@@ -103,13 +104,8 @@ async function me(req, res, next) {
 
 function logout(_, res) {
   // The browser only overwrites a cookie when httpOnly/sameSite/secure match
-  // the ones it was set with, so these must mirror generateToken().
-  res.cookie("jwt", "", {
-    maxAge: 0,
-    httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
-  });
+  // the ones it was set with, so this reuses generateToken()'s options.
+  res.cookie("jwt", "", { ...cookieOptions, maxAge: 0 });
   res.status(200).json({ message: "Logged out successfully" });
 }
 
