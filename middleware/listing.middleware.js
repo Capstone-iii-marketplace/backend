@@ -22,7 +22,7 @@ async function loadOwnedListing(req, res, next) {
 
 // Editing an item someone already reserved or bought changes settled terms.
 function requireActive(req, res, next) {
-  if (req.listing.status !== "av") {
+  if (req.listing.status !== "available") {
     return res
       .status(409)
       .json({ error: `A ${req.listing.status} listing can't be edited` });
