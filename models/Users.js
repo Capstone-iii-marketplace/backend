@@ -29,6 +29,21 @@ const User = db.define(
       allowNull: false,
     },
 
+    major: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    semester: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    avatarUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
     verifiedAt: {
       type: DataTypes.DATE,
       allowNull: true,

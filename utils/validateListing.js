@@ -1,9 +1,11 @@
 const PAYMENT_METHODS = ["online", "in_person", "both"];
+const KINDS = ["item", "session", "post"];
 
 // Returns { error } or { values }. `partial` skips required-field checks so
 // PATCH can send only what changes.
 function validateListing(body = {}, { partial = false } = {}) {
-  const { title, priceCents, paymentMethods, images } = body;
+  const { title, description, priceCents, paymentMethods, images, kind } =
+    body;
   const values = {};
 
   if (title !== undefined) {
@@ -11,6 +13,10 @@ function validateListing(body = {}, { partial = false } = {}) {
     values.title = String(title).trim();
   } else if (!partial) {
     return { error: "Title is required" };
+  }
+
+  if (description !== undefined) {
+    values.description = String(description).trim();
   }
 
   if (priceCents !== undefined) {
@@ -27,6 +33,13 @@ function validateListing(body = {}, { partial = false } = {}) {
       return { error: "Invalid payment method" };
     }
     values.paymentMethods = paymentMethods;
+  }
+
+  if (kind !== undefined) {
+    if (!KINDS.includes(kind)) {
+      return { error: "Invalid listing kind" };
+    }
+    values.kind = kind;
   }
 
   if (images !== undefined) {

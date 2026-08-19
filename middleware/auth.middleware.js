@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 function requireAuth(req, res, next) {
-  const token = req.cookies?.jwt;
+  const token = req.cookies?.jwt; // will crash if the cookies are undefined
 
   if (!token) {
     return res.status(401).json({ error: "Not signed in" });

@@ -11,6 +11,11 @@ function publicUser(user) {
     id: user.id,
     email: user.email,
     name: user.name,
+    major: user.major,
+    semester: user.semester,
+    avatarUrl: user.avatarUrl,
+    verifiedAt: user.verifiedAt,
+    createdAt: user.createdAt,
   };
 }
 
@@ -88,7 +93,18 @@ async function login(req, res, next) {
   }
 }
 
-// todo logout
+function logout(_, res) {
+  // The browser only overwrites a cookie when httpOnly/sameSite/secure match
+  // the ones it was set with, so these must mirror generateToken().
+  const isProd = process.env.NODE_ENV === "production";
+  res.cookie("jwt", "", {
+    maxAge: 0,
+    httpOnly: true,
+    sameSite: isProd ? "none" : "strict",
+    secure: isProd,
+  });
+  res.status(200).json({ message: "Logged out successfully" });
+}
 
 async function me(req, res, next) {
   try {
@@ -102,11 +118,34 @@ async function me(req, res, next) {
   }
 }
 
+
 function logout(_, res) {
   // The browser only overwrites a cookie when httpOnly/sameSite/secure match
   // the ones it was set with, so this reuses generateToken()'s options.
   res.cookie("jwt", "", { ...cookieOptions, maxAge: 0 });
   res.status(200).json({ message: "Logged out successfully" });
+
+async function updateMe(req, res, next) {
+  try {
+    const { name, major, semester, avatarUrl } = req.body || {};
+    const user = await User.findByPk(req.user.id);
+
+    if (name !== undefined) {
+      if (!name.trim()) {
+        return res.status(400).json({ error: "Name can't be empty" });
+      }
+      user.name = name.trim();
+    }
+    if (major !== undefined) user.major = major?.trim() || null;
+    if (semester !== undefined) user.semester = semester?.trim() || null;
+    if (avatarUrl !== undefined) user.avatarUrl = avatarUrl?.trim() || null;
+
+    await user.save();
+    res.json({ user: publicUser(user) });
+  } catch (err) {
+    next(err);
+  }
+
 }
 
-module.exports = { signup, login, logout, me };
+module.exports = { signup, login, logout, me, updateMe };

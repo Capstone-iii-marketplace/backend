@@ -3,14 +3,22 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { db } = require("./models");
+
 // routes
 const authRoute = require("./routes/auth.route");
 const listingRoute = require("./routes/listing.route");
 const orderRoute = require("./routes/order.route");
 const webhookRoute = require("./routes/webhook.route");
+const reviewRoute = require("./routes/review.route");
+const usersRoute = require("./routes/users.route");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const http = require("http");
+const { initSockets } = require("./sockets");
+
+const conversationRoute = require("./routes/conversation.route");
 
 app.use(
   cors({
@@ -44,7 +52,10 @@ app.get("/health", async (req, res) => {
 
 app.use("/api/auth", authRoute);
 app.use("/api/listings", listingRoute);
+app.use("/api/conversations", conversationRoute);
 app.use("/api/orders", orderRoute);
+app.use("/api/reviews", reviewRoute);
+app.use("/api/users", usersRoute);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
@@ -69,7 +80,9 @@ const start = async () => {
   try {
     await db.sync();
     console.log("Database connected");
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    const server = http.createServer(app);
+    initSockets(server);
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (error) {
     console.error("Unable to connect:", error);
     process.exit(1);

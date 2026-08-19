@@ -1,6 +1,14 @@
 require("dotenv").config();
 const bcrypt = require("bcrypt");
-const { db, User, Listing, Conversation, Message, Order } = require("./models");
+const {
+  db,
+  User,
+  Listing,
+  Conversation,
+  Message,
+  Order,
+  Review,
+} = require("./models");
 
 async function seed() {
   // force: true drops and recreates every table — dev only.
@@ -15,24 +23,32 @@ async function seed() {
         email: "alice@qc.cuny.edu",
         passwordHash,
         name: "Alice Chen",
+        major: "Computer Science",
+        semester: "Junior",
         verifiedAt: new Date(),
       },
       {
         email: "bob@qc.cuny.edu",
         passwordHash,
         name: "Bob Rivera",
+        major: "Mechanical Engineering",
+        semester: "Senior",
         verifiedAt: new Date(),
       },
       {
         email: "carlos@qc.cuny.edu",
         passwordHash,
         name: "Carlos Mendez",
+        major: "Economics",
+        semester: "Sophomore",
         verifiedAt: new Date(),
       },
       {
         email: "dana@brooklyn.cuny.edu",
         passwordHash,
         name: "Dana Okafor",
+        major: "Psychology",
+        semester: "Freshman",
         verifiedAt: null, // unverified — use this one to test the gate
       },
     ],
@@ -115,6 +131,22 @@ async function seed() {
       },
       {
         sellerId: carlos.id,
+        kind: "session",
+        title: "1-on-1 calculus tutoring",
+        priceCents: 2500,
+        paymentMethods: "online",
+        images: ["https://picsum.photos/seed/tutoring1/600/400"],
+      },
+      {
+        sellerId: dana.id,
+        kind: "post",
+        title: "How I studied for orgo without losing my mind",
+        priceCents: 0,
+        paymentMethods: "online",
+        images: ["https://picsum.photos/seed/studyguide1/600/400"],
+      },
+      {
+        sellerId: carlos.id,
         title: "Intro to Psychology, 5th ed.",
         priceCents: 1800,
         status: "sold",
@@ -133,7 +165,7 @@ async function seed() {
   );
 
   const [calculus, , , , fridge, biology] = listings;
-  const psych = listings[8];
+  const psych = listings[10];
 
   const conversation = await Conversation.create({
     listingId: calculus.id,
@@ -222,13 +254,39 @@ async function seed() {
     console.log(`  ${who}: ${m.body}`);
   });
 
+  // reviews
+  await Review.bulkCreate([
+    {
+      sellerId: alice.id,
+      authorId: bob.id,
+      rating: 5,
+      body: "Book was exactly as described. Easy meetup by the library.",
+    },
+    {
+      sellerId: alice.id,
+      authorId: carlos.id,
+      rating: 4,
+      body: "Good price, slight delay meeting up but no problem.",
+    },
+    {
+      sellerId: bob.id,
+      authorId: carlos.id,
+      rating: 5,
+      body: "Don't trust the seller. Not even a student.",
+    },
+  ]);
+
   const counts = {
     users: await User.count(),
     listings: await Listing.count(),
     available: await Listing.count({ where: { status: "available" } }),
+    items: await Listing.count({ where: { kind: "item" } }),
+    sessions: await Listing.count({ where: { kind: "session" } }),
+    posts: await Listing.count({ where: { kind: "post" } }),
     conversations: await Conversation.count(),
     messages: await Message.count(),
     orders: await Order.count(),
+    reviews: await Review.count(),
   };
   console.log("\nSeeded:", counts);
 
