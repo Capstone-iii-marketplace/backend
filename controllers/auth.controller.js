@@ -95,14 +95,8 @@ async function login(req, res, next) {
 
 function logout(_, res) {
   // The browser only overwrites a cookie when httpOnly/sameSite/secure match
-  // the ones it was set with, so these must mirror generateToken().
-  const isProd = process.env.NODE_ENV === "production";
-  res.cookie("jwt", "", {
-    maxAge: 0,
-    httpOnly: true,
-    sameSite: isProd ? "none" : "strict",
-    secure: isProd,
-  });
+  // the ones it was set with, so this reuses generateToken()'s options.
+  res.cookie("jwt", "", { ...cookieOptions, maxAge: 0 });
   res.status(200).json({ message: "Logged out successfully" });
 }
 
@@ -117,13 +111,6 @@ async function me(req, res, next) {
     next(err);
   }
 }
-
-
-function logout(_, res) {
-  // The browser only overwrites a cookie when httpOnly/sameSite/secure match
-  // the ones it was set with, so this reuses generateToken()'s options.
-  res.cookie("jwt", "", { ...cookieOptions, maxAge: 0 });
-  res.status(200).json({ message: "Logged out successfully" });
 
 async function updateMe(req, res, next) {
   try {

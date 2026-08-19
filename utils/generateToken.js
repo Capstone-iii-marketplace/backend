@@ -24,18 +24,9 @@ function generateToken(user, res) {
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" },
   );
 
-  // Frontend and backend live on different domains in production
-  // (vercel.app vs onrender.com), so the cookie has to be sent cross-site.
-  // "none" requires "secure", which only works over HTTPS — fine in
-  // production, but would silently drop the cookie over local http.
-  const isProd = process.env.NODE_ENV === "production";
   res.cookie("jwt", token, {
     ...cookieOptions,
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    httpOnly: true,
-    sameSite: isProd ? "none" : "strict",
-    secure: isProd,
-
   });
 
   return token;
